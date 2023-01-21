@@ -4,7 +4,6 @@ Created on Mon Jan 16 12:15:58 2023
 
 @author: wclif
 """
-
 from math import cos, sin
 from random import random as rnd
 from os import system as cmd
@@ -15,7 +14,6 @@ from time import sleep
 import curses
 from sys import exit as ext
 from ctypes import create_unicode_buffer, windll
-# import numpy as np
 
 class WorldObjects:
     TREE = [5,0]
@@ -44,9 +42,13 @@ class World:
         self.exit = False
         self.sounds = []
         
-    def CreateWorld(self):
+    def CreateWorld(self,grid=None):
+        if grid is not None:
+            self.wmap = grid
         for n,i in enumerate(self.wmap):
             for m,_i in enumerate(i):
+                if self.wmap[n][m] == 7:
+                    continue
                 rndVal = rnd()
                 if rndVal < 0.65:
                     continue
@@ -63,8 +65,11 @@ class World:
             self.CreateRandomHollowBox(mx=8,mn=3)
 
     def CreateRandomHollowBox(self,mx=None,mn=None):
-        x = int(rnd()*(self.xmax - self.xmin))
-        y = int(rnd()*(self.ymax - self.ymin))
+        while True:
+            x = int(rnd()*(self.xmax - self.xmin))
+            y = int(rnd()*(self.ymax - self.ymin))
+            if self.wmap[x][y] != 7:
+                break    
         if mx is None or mn is None:
             w = int(rnd()*(self.xmax - self.xmin))
             h = int(rnd()*(self.ymax - self.ymin))
@@ -105,6 +110,8 @@ class World:
         for i in range(x,x+h):
             for j in range(y,y+w):
                 if i == x or i == x+h-1 or j == y or j == y+w-1:
+                    if self.wmap[i][j] == 7:
+                        continue
                     self.wmap[i][j] = 6
 
     def AlterWorld(self,x,y,nm):
@@ -113,8 +120,15 @@ class World:
     def AddPlayer(self,player,x=None,y=None):
         wm = self.wmap
         if x is None:
-            x = int(rnd()*(self.xmax - self.xmin))
-            y = int(rnd()*(self.ymax - self.ymin))
+            # x = int(rnd()*(self.xmax - self.xmin))
+            # y = int(rnd()*(self.ymax - self.ymin))
+            x = int(self.xmax/2)
+            y = int(self.ymax/2)
+            while True:                
+                if wm[x][y] != 6 and wm[x][y] != 7:
+                    break
+                x = int(rnd()*(self.xmax - self.xmin))
+                y = int(rnd()*(self.ymax - self.ymin))
             trn = wm[x][y]
             player.PosUpdate(x,y)
             self.pdict["Player"].append([player,x,y,trn])
@@ -129,7 +143,7 @@ class World:
             while True:
                 x = int(rnd()*(self.xmax - self.xmin))
                 y = int(rnd()*(self.ymax - self.ymin))
-                if wm[x][y] != 6:
+                if wm[x][y] != 6 and wm[x][y] != 7:
                     break
             trn = wm[x][y]
             self.pdict["Enemy"].append([enemy,x,y,trn])
@@ -145,7 +159,7 @@ class World:
                     pl[1] = pl[0].px
                     pl[2] = pl[0].py
                     pl[0].ClearPUpdate()
-                    if pl[1] >= self.xmax or pl[2] >= self.ymax or pl[1] < 0 or pl[2] < 0 or self.wmap[pl[1]][pl[2]] == 6:
+                    if pl[1] >= self.xmax or pl[2] >= self.ymax or pl[1] < 0 or pl[2] < 0 or self.wmap[pl[1]][pl[2]] == 6 or self.wmap[pl[1]][pl[2]] == 7:
                         pl[1] = prevx
                         pl[2] = prevy
                         self.sounds.append(3)
@@ -156,11 +170,176 @@ class World:
                 x,y = en[0].UpdateBehavior(en[1],en[2])
                 en[1] = x
                 en[2] = y
-                if x >= self.xmax or y>= self.ymax or x < 0 or y < 0 or self.wmap[x][y] == 6:
+                if x >= self.xmax or y>= self.ymax or x < 0 or y < 0 or self.wmap[x][y] == 6 or self.wmap[x][y] == 7:
                     en[1],en[2] = prevx, prevy
                     
                 
-    
+class Island:
+    def AddRandomPointsToGrid(grid, numPoints, gauss=False, mean=0, std=0):
+        for i in range(0,numPoints):
+            if gauss == False:
+                x = random.randint(0,len(grid)-1)
+                y = random.randint(0,len(grid[0])-1)
+            else:
+                while True:
+                    nn = 40
+                    x = Island.DiscreteGaussianDraw(mean,std)+int(len(grid)/2)
+                    y = Island.DiscreteGaussianDraw(mean,std)+int(len(grid[0])/2)
+                    if x >= nn and y >= nn and x <= len(grid)-nn and y <= len(grid[0])-nn:
+                        break
+            try:
+                grid[x][y] = 1
+            except IndexError:
+                pass
+        return grid
+
+    def ChangeIsolatedPoints(grid):
+        for i in range(0,len(grid)):
+            for j in range(0,len(grid[0])):
+                if grid[i][j] == 1:
+                    cnt = 0
+                    ect = 0
+                    try:
+                        if grid[i+1][j] == 0: 
+                            cnt += 1
+                    except IndexError:
+                        ect += 1
+                    try:
+                        if grid[i-1][j] == 0:
+                            cnt += 1
+                    except IndexError:
+                        ect += 1
+                    try:
+                        if grid[i][j+1] == 0:
+                            cnt += 1
+                    except IndexError:
+                        ect += 1
+                    try:
+                        if grid[i][j-1] == 0:
+                            cnt += 1
+                    except IndexError:
+                        ect += 1                
+                    if cnt > 2 or ect > 2:
+                        grid[i][j] = 0
+
+                if grid[i][j] == 0:
+                    cnt = 0
+                    ect = 0
+                    try:
+                        if grid[i+1][j] == 1: 
+                            cnt += 1
+                    except IndexError:
+                        ect += 1
+                    try:
+                        if grid[i-1][j] == 1:
+                            cnt += 1
+                    except IndexError:
+                        ect += 1
+                    try:
+                        if grid[i][j+1] == 1:
+                            cnt += 1
+                    except IndexError:
+                        ect += 1
+                    try:
+                        if grid[i][j-1] == 1:
+                            cnt += 1
+                    except IndexError:
+                        ect += 1                
+                    if (cnt > 2 or ect > 2):
+                        grid[i][j] = 1                
+        return grid
+
+    def ConnectToContinent(grid,rng=1):
+        ngrid = [[0 for i in range(0,len(grid[0]))] for j in range(0,len(grid))]
+        for i in range(0,len(grid)):
+            for j in range(0,len(grid[0])):
+                if grid[i][j] == 0:
+                    for lr in range(-rng,rng+1):
+                        for ud in range(-rng,rng+1):
+                            if ud == 0 and lr == 0:
+                                continue
+                            try:
+                                if grid[i+lr][j+ud] == 1 and i+lr >= 0 and j+ud >= 0:
+                                    ngrid[i][j] = 1
+                                    # testPoints2.append([i+lr,j+ud])
+                                    # testPoints.append([i,j])
+                            except IndexError:
+                                pass      
+        for i in range(0,len(grid)):
+            for j in range(0,len(grid[0])):
+                if ngrid[i][j] == 1:
+                    if random.randint(0,1) == 1:
+                        grid[i][j] = 1        
+        return grid
+
+    def DiscreteGaussianDraw(mean, std):
+        return int(random.gauss(mean,std))
+
+    def ConvertGrid(grid):
+        for i in range(0,len(grid)):
+            for j in range(0,len(grid[0])):
+                if grid[i][j] == 0:
+                    grid[i][j] = 7
+                else:
+                    grid[i][j] = 0
+        return grid
+
+    def ConnectRandomPoints(grid):
+        for i in range(0,len(grid)):
+            for j in range(0,len(grid[0])):
+                i = len(grid)-1-i #To my eye, the resulting map looks better if the points are connected from the bottom up
+                j = len(grid[0])-1-j #Whereas top down looks biased towards the top. Not sure why.
+                if grid[i][j] == 1:
+                    if random.randint(0,1) == 1:
+                        grid[i][j] = 0
+                        try:
+                            grid[i+1][j] = 1
+                        except IndexError:
+                            pass
+                        try:
+                            grid[i-1][j] = 1
+                        except IndexError:
+                            pass
+                        try:
+                            grid[i][j+1] = 1
+                        except IndexError:
+                            pass
+                        try:
+                            grid[i][j-1] = 1
+                        except IndexError:
+                            pass
+        return grid
+
+    def CountLand(grid):
+        cnt = 0
+        for i in range(0,len(grid)):
+            for j in range(0,len(grid[0])):
+                if grid[i][j] == 1:
+                    cnt += 1
+        return cnt
+
+    def CreateGrid(x,y):
+        grid = []
+        for i in range(0,x):
+            grid.append([])
+            for j in range(0,y):
+                grid[i].append(0)
+        return grid
+
+
+    def ProgressBar(cnt, total, pct):
+        cmd("cls")
+        bar = ""
+        cur = int(cnt/total/pct*100)/10
+        for i in range(0,10):
+
+            if i <= cur:
+                bar += "==="
+            else:
+                bar += "   "
+        if cur > 10:
+            cur = 10
+        print(f"Generating world - [{bar}] {cur*10}% ({cnt}/{int(total*pct)})")    
 
 
 class Console:
@@ -171,8 +350,8 @@ class Console:
         self.StartCurses()
         self.statusTimerMax = 3
         self.statusTimerCur = 0
-        self.ymax = self.world.ymax
-        self.xmax = self.world.xmax
+        self.ymax = 30
+        self.xmax = 30
         
     def StartCurses(self):
         self.stdscr = curses.initscr()
@@ -185,7 +364,10 @@ class Console:
         curses.init_pair(6, curses.COLOR_BLACK, curses.COLOR_CYAN)
         curses.init_pair(7, curses.COLOR_WHITE, curses.COLOR_RED)
         curses.init_pair(8, curses.COLOR_BLACK, curses.COLOR_WHITE)
-        self.y, self.x = self.world.ymax,self.world.xmax*4
+        curses.init_pair(9, curses.COLOR_BLACK, curses.COLOR_BLACK)
+        curses.init_pair(10, curses.COLOR_CYAN, curses.COLOR_CYAN)
+        # self.y, self.x = self.world.ymax,self.world.xmax*4
+        self.y, self.x = 30,30*4
         if self.y < 18:
             self.y = 18
         if self.x < 21*3+25:
@@ -215,7 +397,9 @@ class Console:
                 self.stdscr.clear()
                 self.stdscr.refresh()
             else:
+                print("beg")
                 self.DrawWorld()
+                print("end")
                 if self.statusTimerCur > 0:
                     self.statusTimerCur -= 0.1
                     if self.statusTimerCur <= 0:
@@ -237,6 +421,7 @@ class Console:
         self.channels = []
         channels = self.channels
         if True:
+            # self.stdscr.erase()
             self.redrawing = True
             ymx = self.ymax
             xmx = self.xmax
@@ -263,9 +448,18 @@ class Console:
             # print('\033[4A\033[2K', end='')
             # print()
             # print()
-            for nm, ln in enumerate(wm):
+            # for nm, ln in enumerate(wm):
+            _x = pl[1]
+            _y = pl[2]
+
+            for i in range(-int(xmx/2),int(xmx/2)+1):
                 row = ''
-                for nm2,_ln in enumerate(ln):
+                # for nm2,_ln in enumerate(ln):
+                for j in range(-int(ymx/2),int(ymx/2)+1):
+                    if _x + i < 0 or _y + j < 0 or _x + i >= len(wm) or _y + j >= len(wm[0]):
+                        _ln = 99
+                    else:
+                        _ln = wm[_x+i][_y+j]
                     if _ln == 0:
                         ic = ','
                         bgcol = curses.color_pair(1)
@@ -293,23 +487,34 @@ class Console:
                     elif _ln == 5:
                         ic = ' '
                         bgcol = curses.color_pair(1)
+                    elif _ln == 99:
+                        ic = ' '
+                        bgcol = curses.color_pair(9)
+                    elif _ln == 7:
+                        if random.randint(0,1) == 0:
+                            ic = '~'
+                        else:
+                            ic = '-'
+                        bgcol = curses.color_pair(10) + curses.A_STANDOUT
                     
-                    # if nm2 == 0:
-                    self.stdscr.addstr(nm,nm2*3,f" {ic} ", bgcol)
-                    # else:
-                        # stdscr.addstr(f" {ic} ", bgcol)
-          
+                    try:
+                        self.stdscr.addstr(15+i,(15+j)*3,f" {ic} ", bgcol)
+                    except curses.error:
+                        pass
+
+            wxmx = 15
+            wymx = 15
             self.redrawing = False
-            self.stdscr.addstr(4,(xmx+1)*3," ########################")
-            self.stdscr.addstr(5,(xmx+1)*3," #Ye Player Stats Here:##")
-            self.stdscr.addstr(6,(xmx+1)*3,f" #Wood: {self.player.WOOD:03d}             #")
-            self.stdscr.addstr(7,(xmx+1)*3,f" #Flowers: {self.player.PLANT:03d}          #")
-            self.stdscr.addstr(8,(xmx+1)*3,f" #Ore: {self.player.ORE:03d}              #")
-            self.stdscr.addstr(9,(xmx+1)*3,f" #Gems: {self.player.SPEC:03d}             #")
-            self.stdscr.addstr(10,(xmx+1)*3," ########################")
+            self.stdscr.addstr(4,(wxmx*2+1)*3," ########################")
+            self.stdscr.addstr(5,(wxmx*2+1)*3," #Ye Player Stats Here:##")
+            self.stdscr.addstr(6,(wxmx*2+1)*3,f" #Wood: {self.player.WOOD:03d}             #")
+            self.stdscr.addstr(7,(wxmx*2+1)*3,f" #Flowers: {self.player.PLANT:03d}          #")
+            self.stdscr.addstr(8,(wxmx*2+1)*3,f" #Ore: {self.player.ORE:03d}              #")
+            self.stdscr.addstr(9,(wxmx*2+1)*3,f" #Gems: {self.player.SPEC:03d}             #")
+            self.stdscr.addstr(10,(wxmx*2+1)*3," ########################")
             
-            self.stdscr.addstr(14,(xmx+1)*3,f"  Last Action:")
-            self.stdscr.addstr(ymx-1,(xmx)*3,"")
+            self.stdscr.addstr(14,(wxmx*2+1)*3,f"  Last Action:")
+            self.stdscr.addstr(wymx*2-1,(wxmx*2+1)*3,"")
             self.stdscr.refresh()
 
 def GetInput(world,player,console,ts): 
@@ -336,7 +541,7 @@ def GetInput(world,player,console,ts):
                             y += 1
                         elif ky == " ":
                             ic = world.wmap[ply[1]][ply[2]]
-                            console.DrawAction(f"  Destroying {ic}")
+                            console.DrawAction(f"  Destroying {ic}     ")
                             ply[0].Action(harvest=True,nm=ic,x=ply[1],y=ply[2])
                             if ply[0].hstats is not None:
                                 console.DrawStats(f"  Health: {ply[0].hstats[0]}  ")
@@ -344,7 +549,6 @@ def GetInput(world,player,console,ts):
                                 console.DrawStats(f"  Health: 0  ")
                         elif ky == "u":
                             curses.flash()
-                            # console.ResizeConsole(25,120)
                         elif ky == "p":
                             console.sounds.pause = not console.sounds.pause
                         elif ky == "b":
@@ -355,18 +559,15 @@ def GetInput(world,player,console,ts):
                                 # console.DrawAction(f"  Building W ")
                                 rtn = ply[0].Action(build=True,nm=ic,x=ply[1],y=ply[2])
                                 if rtn:
-                                    console.DrawAction(f"  Building W ")
+                                    console.DrawAction(f"  Building W      ")
                                 else:
-                                    console.DrawAction("  Not enough wood")
+                                    console.DrawAction("  Not enough wood  ")
                         ply[0].PosUpdate(x,y)
                         if ply[1] != x or ply[2] != y:
                             ply[0].CancelAction()
                     except UnicodeDecodeError:
                         pass
             world.UpdateWorld(pOnly=True)
-        
-        # if not world.redrawing:
-        #     world.DrawWorld()
 
 class Player:
     WOOD = 0
@@ -416,7 +617,7 @@ class Player:
                 self.hstats = [x for x in WorldObjects.ReturnObj(nm)]
             self.hstats[0] -= 1
             self.world.sounds.append(0)
-            t1 = threading.Thread(target=self.Cooldown,args=(0,0.5,))
+            t1 = threading.Thread(target=self.Cooldown,args=(0,0.35,))
             t1.start()
             if self.hstats[0] <= 0:
                 self.UpdateInventory(self.hstats[1],1)
@@ -429,7 +630,7 @@ class Player:
                 self.UpdateInventory(0,-1)
                 self.world.AlterWorld(x,y,6)
                 self.world.sounds.append(4)
-                t1 = threading.Thread(target=self.Cooldown,args=(0,0.5,))
+                t1 = threading.Thread(target=self.Cooldown,args=(0,0.35,))
                 t1.start()
                 return True
             else:
@@ -583,17 +784,64 @@ class Sound():#Simple version of playsound with more commands!
         # self.Close()
         print("Exit sounds")
             
-    
+
+
+   
+
 if __name__ == "__main__":
     cmd('cls')
-    simplify = False
-    n = 30
+    simplify = False #This is used for debugging purposes.
     sounds = Sound("sounds\\bg\\ab.mp3")
+    
+    #Needs to be same height and width because I mixed up x and y. Kinda a deep fix...
+    # world.CreateWorld()
+    # print("Loading map")
+    ##########################################################################
+    # Island Generation
+    ##########################################################################
+    pctLand = 0.4
+    n = 400
+    totalMap = n*n
+    rn = 100
+    adrn = 10
+    maxiter = 500
+    iter = 0
+    itype = 2
+    world = World(0,n,0,n) 
+    if itype == 0:
+        world.CreateWorld()
+    elif itype == 1:
+        grid = Island.CreateGrid(n,n)
+        grid = Island.AddRandomPointsToGrid(grid, rn, True, 0, 15)
+        for i in range(0,6):
+            grid = Island.ConnectRandomPoints(grid)
+        grid = Island.ChangeIsolatedPoints(grid)
+    elif itype == 2:
+        grid = Island.CreateGrid(n,n)
+        while True:  
+            print()  
+            grid = Island.AddRandomPointsToGrid(grid, rn)
+            grid = Island.ConnectRandomPoints(grid)
+            grid = Island.ChangeIsolatedPoints(grid)
+            cnt = Island.CountLand(grid)
+            if cnt/totalMap >= pctLand:
+                break
+            else:
+                rn = adrn
+            iter += 1
+            if iter > maxiter:
+                break
+            Island.ProgressBar(cnt,totalMap,pctLand)
+        grid = Island.ConnectToContinent(grid,rng=3)
+        grid = Island.ConnectRandomPoints(grid)
+        grid = Island.ChangeIsolatedPoints(grid)
+        Island.ProgressBar(cnt,totalMap,pctLand)
+    if itype != 0:
+        world.CreateWorld(grid=Island.ConvertGrid(grid))    
+    ##########################################################################
     if not simplify:
         ts = threading.Thread(target=sounds.PlayBG,args=())
         ts.start()
-    world = World(0,n,0,n) #Needs to be same height and width because I mixed up x and y. Kinda a deep fix...
-    world.CreateWorld()
     player = Player(123456,world)
     console = Console(world,player,sounds)
     world.AddPlayer(player)
@@ -604,10 +852,12 @@ if __name__ == "__main__":
         t1.start()
         t2 = threading.Thread(target=console.WorldRefresh,args=(0.001,))    
         t2.start()
+    else:
+        console.DrawWorld()
     init = False
-    console.DrawWorld()
     while True:
-        world.UpdateWorld(eOnly=init,pOnly=False)
+        if not simplify:
+            world.UpdateWorld(eOnly=init,pOnly=False)
         if world.exit:
             break
         sleep(0.1)
