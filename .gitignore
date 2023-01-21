@@ -1,0 +1,8 @@
+# Hiding files from the file explorer
+*vscode
+*.spec
+
+#Hiding folders from the file explorer
+build/
+dist/
+sounds/
