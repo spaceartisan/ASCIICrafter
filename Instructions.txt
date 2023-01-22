@@ -1,0 +1,34 @@
+Main File structure:
+ASCIICrafter/
+├─ sounds/
+│  ├─ bg/
+│  │  ├─ab.mp3
+│  │  ├─bb.mp3
+│  │  ├─cb.mp3
+│  │  ├─db.mp3
+│  │  ├─...
+│  ├─ sfx/
+│  │  ├─a.mp3
+│  │  ├─b.mp3
+│  │  ├─c.mp3
+│  │  ├─d.mp3
+│  │  ├─...
+├─ ASCIICrafter.exe
+
+Travelling in the world:
+No objective, just testing functionality. All tiles are traversible except water, walls, and
+the maps edge.
+
+Keybindings:
+w,a,s,d - Movement in the world
+p - pause/unpause background music
+spacebar - harvest let resources (e.g."T",";","M","@"). Must be on top of resource to harvest
+up,down,left,right - Attack/Deconstruct. Will attempt to destroy adjacent "&" or "W" tiles.
+b - build object. (e.g. wood from "T" will allow you to place a "W" tile)
+ESC - will close the program
+
+Only compatible with windows systems. Currently incompatible with MAC OSX and LINUX.
+
+Troubleshooting:
+If you are unabled to open, right click ASCIICrafter.exe and click proprterties. Under the general tab
+look for a checkbox to "unblock" the program. Click apply and reopen.

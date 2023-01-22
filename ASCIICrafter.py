@@ -41,6 +41,7 @@ class World:
         self.pdict = {"Player" : [], "Enemy" : []}
         self.exit = False
         self.sounds = []
+        self.atk = []
         
     def CreateWorld(self,grid=None):
         if grid is not None:
@@ -61,8 +62,51 @@ class World:
                 else:
                     self.wmap[n][m] = 4 #Special
         # self.CreateRandomHollowBox()
-        for _ in range(0,8):
-            self.CreateRandomHollowBox(mx=8,mn=3)
+        for _ in range(0,50):
+            self.CreateRandomHollowBox2(mx=15,mn=5)
+
+    def CreateRandomHollowBox2(self,mx=None,mn=None):
+        maxiter = 500
+        iter = 0
+        while True:
+            while True:
+                x = int(rnd()*(self.xmax - self.xmin))
+                y = int(rnd()*(self.ymax - self.ymin))
+                if self.wmap[x][y] != 7:
+                    break    
+            if mx is None or mn is None:
+                w = int(rnd()*(self.xmax - self.xmin))
+                h = int(rnd()*(self.ymax - self.ymin))
+            else:
+                w = int(rnd()*(mx - mn)) + mn
+                h = int(rnd()*(mx - mn)) + mn        
+            if x + 2 >= self.xmax:
+                x = self.xmax - 3
+            if y + 2 >= self.ymax:
+                y = self.ymax - 3
+            if w < 3:
+                w = 3
+            if h < 3:
+                h = 3
+            doesIsSucceed = True
+            for i in range(x-1,x+h+1):
+                for j in range(y-1,y+w+1):
+                    if i < 0 or j < 0 or i >= self.xmax or j >= self.ymax:
+                        doesIsSucceed = False
+                    elif self.wmap[i][j] == 6 or self.wmap[i][j] == 8 or self.wmap[i][j] == 7:
+                        doesIsSucceed = False
+                    if not doesIsSucceed:
+                        break
+                if not doesIsSucceed:
+                    break
+            if doesIsSucceed:
+                break
+            else:
+                iter += 1
+                if iter > maxiter:
+                    return
+
+        self.CreateHollowBox2(x,y,w,h)
 
     def CreateRandomHollowBox(self,mx=None,mn=None):
         while True:
@@ -110,9 +154,76 @@ class World:
         for i in range(x,x+h):
             for j in range(y,y+w):
                 if i == x or i == x+h-1 or j == y or j == y+w-1:
-                    if self.wmap[i][j] == 7:
-                        continue
-                    self.wmap[i][j] = 6
+                    if self.wmap[i][j] == 7: #Water
+                        pass
+                    else:
+                        self.wmap[i][j] = 6 #Wall
+                else:
+                    if self.wmap[i][j] == 7: #Water
+                        pass
+                    else:
+                        self.wmap[i][j] = 8 #Floor
+        for i in range(x,x+h):
+            for j in range(y,y+w):
+                if self.wmap[i][j] == 8:
+                    for _i in range(i-1,i+2):
+                        for _j in range(j-1,j+2):
+                            if _i < 0 or _j < 0 or _i >= self.ymax or _j >= self.xmax:
+                                continue
+                            if self.wmap[_i][_j] == 7:
+                                self.wmap[_i][_j] = 6
+        for i in range(x,x+h):
+            for j in range(y,y+w):
+                if self.wmap[i][j] == 6:
+                    wc = 0
+                    fc = 0
+                    oc = 0
+                    bc = 0
+                    for _i in range(i-1,i+2):
+                        for _j in range(j-1,j+2):
+                            if _i == i and _j == j:
+                                continue
+                            if _i < 0 or _j < 0 or _i >= self.ymax or _j >= self.xmax:
+                                bc += 1
+                                continue
+                            if self.wmap[_i][_j] == 6:
+                                wc += 1
+                            elif self.wmap[_i][_j] == 8:
+                                fc += 1
+                            else:
+                                oc += 1
+                    if wc > 2 and oc == 0 and bc == 0 and fc > 0:
+                        self.wmap[i][j] = 8
+                    elif fc == 0:
+                        self.wmap[i][j] = 0
+
+    def CreateHollowBox2(self,x,y,w,h): #Wow I need to fix the coordinates, there will be a future issue with this
+        if x+h >= self.ymax:
+            h = self.ymax - x
+        if y+w >= self.xmax:
+            w = self.xmax - y
+        for i in range(x,x+h):
+            for j in range(y,y+w):
+                if i == x or i == x+h-1 or j == y or j == y+w-1:
+                    if self.wmap[i][j] == 7: #Water
+                        pass
+                    else:   
+                        self.wmap[i][j] = 6 #Wall
+                else:
+                    if self.wmap[i][j] == 7: #Water
+                        pass
+                    else:
+                        self.wmap[i][j] = 8 #Floor
+        side = random.randint(0,3)
+        if side == 0: #LEFT
+            self.wmap[x+3][y] = 5
+        elif side == 1: #BOTTOM
+            self.wmap[x+h-1][y+3] = 5
+        elif side == 2: #RIGHT
+            self.wmap[x+h-4][y+w-1] = 5
+        elif side == 3: #TOP
+            self.wmap[x][y+w-4] = 5
+
 
     def AlterWorld(self,x,y,nm):
         self.wmap[x][y] = nm
@@ -163,15 +274,23 @@ class World:
                         pl[1] = prevx
                         pl[2] = prevy
                         self.sounds.append(3)
+                        
         if not pOnly:
             for en in self.pdict["Enemy"]:
                 # print(en)
+                if self.atk != []:
+                    if self.atk[0] == en[1] and self.atk[1] == en[2]:
+                        self.sounds.append(12)
+                        self.atk[-1].GainExperience(50)
+                        self.pdict["Enemy"].remove(en)
+                        continue
                 prevx, prevy = en[1],en[2] 
                 x,y = en[0].UpdateBehavior(en[1],en[2])
                 en[1] = x
                 en[2] = y
                 if x >= self.xmax or y>= self.ymax or x < 0 or y < 0 or self.wmap[x][y] == 6 or self.wmap[x][y] == 7:
                     en[1],en[2] = prevx, prevy
+            self.atk = []
                     
                 
 class Island:
@@ -366,6 +485,7 @@ class Console:
         curses.init_pair(8, curses.COLOR_BLACK, curses.COLOR_WHITE)
         curses.init_pair(9, curses.COLOR_BLACK, curses.COLOR_BLACK)
         curses.init_pair(10, curses.COLOR_CYAN, curses.COLOR_CYAN)
+        curses.init_pair(11, curses.COLOR_BLACK, curses.COLOR_YELLOW)
         # self.y, self.x = self.world.ymax,self.world.xmax*4
         self.y, self.x = 30,30*4
         if self.y < 18:
@@ -397,13 +517,12 @@ class Console:
                 self.stdscr.clear()
                 self.stdscr.refresh()
             else:
-                print("beg")
                 self.DrawWorld()
-                print("end")
                 if self.statusTimerCur > 0:
                     self.statusTimerCur -= 0.1
                     if self.statusTimerCur <= 0:
                         self.DrawAction("                    ")
+                        self.DrawAction2("                    ")
                         self.DrawStats("                    ")
             sleep(rate)
         
@@ -411,6 +530,11 @@ class Console:
         if msg != "               ":
             self.statusTimerCur = self.statusTimerMax
         self.stdscr.addstr(15,(self.xmax+1)*3,msg)
+
+    def DrawAction2(self,msg=None):
+        if msg != "               ":
+            self.statusTimerCur = self.statusTimerMax
+        self.stdscr.addstr(17,(self.xmax+1)*3,msg)
         
     def DrawStats(self,msg=None):
         if msg != "               ":
@@ -460,42 +584,48 @@ class Console:
                         _ln = 99
                     else:
                         _ln = wm[_x+i][_y+j]
-                    if _ln == 0:
+                    if _ln == 0: #Grass
                         ic = ','
                         bgcol = curses.color_pair(1)
-                    elif _ln == 1:
+                    elif _ln == 1: #Flower
                         bgcol = curses.color_pair(2)#stdscr.addstr(0,0,"Pretty text", curses.color_pair(1))
                         ic = ';'
-                    elif _ln == 2:
+                    elif _ln == 2: #Tree
                         bgcol = curses.color_pair(3)
                         ic = 'T'
-                    elif _ln == 3:
+                    elif _ln == 3:#Ore
                         bgcol = curses.color_pair(4)
                         ic = 'M'
-                    elif _ln == 4:
+                    elif _ln == 4: #Special
                         bgcol = curses.color_pair(5)
                         ic = '@'
-                    elif _ln == 6:
+                    elif _ln == 6: #Wall
                         ic = 'W'
                         bgcol = curses.color_pair(8) + curses.A_STANDOUT
-                    elif _ln == "X":
+                    elif _ln == "X": #Player
                         ic = '&'
                         bgcol = curses.color_pair(6)
-                    elif _ln == "U":
+                    elif _ln == "U": #Enemy
                         ic = '&'
                         bgcol = curses.color_pair(7)
-                    elif _ln == 5:
+                    elif _ln == 5: #Blank Grass
                         ic = ' '
                         bgcol = curses.color_pair(1)
-                    elif _ln == 99:
+                    elif _ln == 99: #Blank
                         ic = ' '
                         bgcol = curses.color_pair(9)
-                    elif _ln == 7:
-                        if random.randint(0,1) == 0:
+                    elif _ln == 7: #Water
+                        ric = random.randint(0,10)
+                        if ric == 0:
                             ic = '~'
-                        else:
+                        elif ric == 1:
                             ic = '-'
+                        else:
+                            ic = ' '
                         bgcol = curses.color_pair(10) + curses.A_STANDOUT
+                    elif _ln == 8: #Floor
+                        ic = '|'
+                        bgcol = curses.color_pair(11) + curses.A_UNDERLINE + curses.A_BLINK
                     
                     try:
                         self.stdscr.addstr(15+i,(15+j)*3,f" {ic} ", bgcol)
@@ -511,7 +641,8 @@ class Console:
             self.stdscr.addstr(7,(wxmx*2+1)*3,f" #Flowers: {self.player.PLANT:03d}          #")
             self.stdscr.addstr(8,(wxmx*2+1)*3,f" #Ore: {self.player.ORE:03d}              #")
             self.stdscr.addstr(9,(wxmx*2+1)*3,f" #Gems: {self.player.SPEC:03d}             #")
-            self.stdscr.addstr(10,(wxmx*2+1)*3," ########################")
+            self.stdscr.addstr(10,(wxmx*2+1)*3,f" #Exp: {self.player.EXP:03d}              #")
+            self.stdscr.addstr(11,(wxmx*2+1)*3," ########################")
             
             self.stdscr.addstr(14,(wxmx*2+1)*3,f"  Last Action:")
             self.stdscr.addstr(wymx*2-1,(wxmx*2+1)*3,"")
@@ -524,9 +655,16 @@ def GetInput(world,player,console,ts):
             if pressed == b'\x1b':
                 world.exit = True
                 ext()
-            for ply in world.pdict["Player"]:
+            for ply in world.pdict["Player"]: #I don't think this is the best way to do this, but it works for now (Already have reference to player)
+                if ply[0].consoleMsg is not None:
+                    console.DrawAction2(ply[0].consoleMsg)
+                    ply[0].consoleMsg = None
                 if ply[0].ids == player:
                     try:
+                        if pressed == b'\xe0': #U,L,D,R : H, K, P, M
+                            pressed = msvcrt.getch()
+                            if pressed.decode() not in ["H","K","P","M"]:
+                                continue
                         ky = pressed.decode()
                         x = ply[1]
                         y = ply[2]
@@ -562,6 +700,8 @@ def GetInput(world,player,console,ts):
                                     console.DrawAction(f"  Building W      ")
                                 else:
                                     console.DrawAction("  Not enough wood  ")
+                        elif ky in ["H","K","P","M"]:
+                            ply[0].Action(fight=True,nm=ky,x=ply[1],y=ply[2])
                         ply[0].PosUpdate(x,y)
                         if ply[1] != x or ply[2] != y:
                             ply[0].CancelAction()
@@ -574,6 +714,7 @@ class Player:
     PLANT = 0
     ORE = 0
     SPEC = 0
+    EXP = 0
     def __init__(self,ids=None,world=None):
         self.world = world
         self.hp = 10
@@ -586,13 +727,21 @@ class Player:
         self.harvest = False
         self.hstats = None
         self.cooldown = [False,False] #Harves, Movement
+        self.consoleMsg = None
     
     def Cooldown(self,id=None,tm=None):
         self.cooldown[id] = True
         sleep(tm)
         self.cooldown[id] = False
 
-    def UpdateInventory(self,ty=None,amt=None):
+    def GainExperience(self,amt=None):
+        self.consoleMsg = f"  Gained {amt} EXP  "
+        self.EXP += amt
+        # if self.EXP >= 100:
+        #     self.EXP -= 100
+        #     self.LevelUp()
+
+    def UpdateInventory(self,ty=None,amt=None,playSound=True):
         if ty == 0:
             if self.WOOD < 100-amt:
                 self.WOOD += amt
@@ -606,7 +755,8 @@ class Player:
             if self.SPEC < 100-amt:
                 self.SPEC += amt
         if amt > 0:
-            self.world.sounds.append(6)
+            if playSound:
+                self.world.sounds.append(6)
     
     def Action(self,harvest=None,craft=None,build=None,fight=None,nm=None,x=None,y=None):
         if harvest is not None and nm not in [0,5]:
@@ -617,12 +767,13 @@ class Player:
                 self.hstats = [x for x in WorldObjects.ReturnObj(nm)]
             self.hstats[0] -= 1
             self.world.sounds.append(0)
-            t1 = threading.Thread(target=self.Cooldown,args=(0,0.35,))
-            t1.start()
             if self.hstats[0] <= 0:
                 self.UpdateInventory(self.hstats[1],1)
                 self.world.AlterWorld(x,y,5)
                 self.CancelAction()
+            else:
+                t1 = threading.Thread(target=self.Cooldown,args=(0,0.35,))
+                t1.start()
         if build is not None:
             if self.cooldown[0]:
                 return
@@ -635,6 +786,30 @@ class Player:
                 return True
             else:
                 return False
+        if fight is not None:
+            if self.cooldown[0]:
+                return
+            if nm == "H":
+                x -= 1
+            elif nm == "K":
+                y -= 1
+            elif nm == "P":
+                x += 1
+            elif nm == "M":
+                y += 1
+            if self.world.wmap[x][y] == 6:
+                self.world.AlterWorld(x,y,5)
+                self.world.sounds.append(4)
+                self.UpdateInventory(0,1,False)
+                t1 = threading.Thread(target=self.Cooldown,args=(0,0.35,))
+                t1.start()
+            else:
+                self.world.atk = [x,y,self]
+                self.world.sounds.append(0)
+                t1 = threading.Thread(target=self.Cooldown,args=(0,0.35,))
+                t1.start()
+
+
     
     def CancelAction(self):
         if self.harvest:
@@ -706,7 +881,7 @@ class Sound():#Simple version of playsound with more commands!
         dire = "sounds\\sfx\\"
         dirb = "sounds\\bg\\"
         ext = ".mp3"
-        fil = ["a","b","c","d","e","f","g"]#a,d,g
+        fil = ["a","b","c","d","e","f","g","h","i","j","k","l","m"]#a,d,g,m
         fib = ["ab","bb","cb","db","eb"]
         self.files = [f"{dire}{fn}{ext}" for fn in fil]
         self.fileb = [f"{dirb}{fn}{ext}" for fn in fib]
@@ -790,6 +965,7 @@ class Sound():#Simple version of playsound with more commands!
 
 if __name__ == "__main__":
     cmd('cls')
+    # random.seed(1236489)
     simplify = False #This is used for debugging purposes.
     sounds = Sound("sounds\\bg\\ab.mp3")
     
@@ -800,7 +976,7 @@ if __name__ == "__main__":
     # Island Generation
     ##########################################################################
     pctLand = 0.4
-    n = 400
+    n = 200
     totalMap = n*n
     rn = 100
     adrn = 10
@@ -845,7 +1021,7 @@ if __name__ == "__main__":
     player = Player(123456,world)
     console = Console(world,player,sounds)
     world.AddPlayer(player)
-    for i in range(5):
+    for i in range(200):
         world.AddEnemy(Enemy(world))
     if not simplify:
         t1 = threading.Thread(target=GetInput,args=(world,123456,console,ts,))    
