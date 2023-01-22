@@ -3,6 +3,18 @@
 Console.py - This file contains the Console class and the Sound class. 
 The Console class is used to draw the world and the Sound class is used to play sounds.
 Additionally GetInput() is used to get input from the user. In the future these will be moved to their own files.
+
+Classes
+-------
+Console
+    The Console class is used to draw the world and get input from the user.
+Sound
+    The Sound class is used to play sounds.
+
+Functions
+---------
+GetInput()
+    Gets input from the user.
 """
 
 from ctypes import create_unicode_buffer, windll
@@ -15,6 +27,18 @@ import threading
 import random
 
 class Console:
+    """
+    Console class is used to draw the world and get input from the user.
+    
+    Parameters
+    ----------
+    world : World
+        The world object that contains the map and entities.
+    player : Player
+        The player object that contains the player's information.
+    sounds : Sound
+        The sound object that contains the sounds
+    """
     def __init__(self,world=None,player=None,sounds=None):
         self.world = world
         self.player = player
@@ -201,7 +225,16 @@ class Console:
             self.stdscr.addstr(wymx*2-1,(wxmx*2+1)*3,"")
             self.stdscr.refresh()
 
-def GetInput(world,player,console,ts): 
+def GetInput(world,player,console,ts):
+    """Get input from the user and act on it.
+    This is a blocking function, so it should be run in a separate thread.
+    
+    Args:
+        world (World): The world object
+        player (Player): The player object
+        console (Console): The console object
+        ts (float): The sound thread (deprecated)
+    """ 
     while True:  
         if msvcrt.kbhit():         
             pressed = msvcrt.getch()
@@ -263,6 +296,14 @@ def GetInput(world,player,console,ts):
             world.UpdateWorld(pOnly=True)
 
 class Sound():#Simple version of playsound with more commands!
+    """
+    Simple version of playsound with more commands!
+    
+    Parameters
+    ----------
+    bg : str
+        The background music file to play
+    """
     def __init__(self,bg):
         self.bg = bg
         self.nbg = None

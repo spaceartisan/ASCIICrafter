@@ -14,6 +14,9 @@ from World import World, Island
    
 
 if __name__ == "__main__":
+    """
+    This is the main function. It is used to run the game.
+    """
     cmd('cls')
     # random.seed(1236489)
     simplify = False #This is used for debugging purposes.

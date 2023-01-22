@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
 """
 Entities.py - This file contains the Player and Enemy classes. 
+
+Classes
+-------
+Player
+    This class contains the player's stats and methods.
+Enemy
+    This class contains the enemy's stats and methods.
 """
 
 from time import sleep
@@ -9,7 +16,16 @@ import random
 from Object import WorldObjects, Item
 
 class Player:
-    #Inventory 
+    """
+    This class contains the player's stats and methods.
+    
+    Parameters
+    ----------
+    ids : int
+        The player's ID.
+    world : World
+        The world that the player is in.
+    """
     WOOD = 0
     PLANT = 0
     ORE = 0
@@ -133,6 +149,14 @@ class Player:
         t2.start()
 
 class Enemy:
+    """
+    This class contains the enemy's stats and methods.
+    
+    Parameters
+    ----------
+    world : World
+        The world that the enemy is in.
+    """
     def __init__(self,world=None):
         self.world = world
         self.hp = 0

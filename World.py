@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
 """
 World.py - Contains the World and Island classes. This script is used to generate the world.
+
+Classes
+-------
+World
+    This class is used to generate the world.
+Island
+    This class is used to generate the island.
 """
 
 
@@ -12,6 +19,20 @@ from os import system as cmd
 
 
 class World:
+    """
+    This class is used to generate the world.
+    
+    Parameters
+    ----------
+    xmin : int
+        The minimum x value of the world.
+    xmax : int 
+        The maximum x value of the world.
+    ymin : int
+        The minimum y value of the world.
+    ymax : int
+        The maximum y value of the world.
+    """
     def __init__(self,xmin=0,xmax=2,ymin=0,ymax=2):
         self.xmin = xmin
         self.xmax = xmax
@@ -275,6 +296,9 @@ class World:
                     
                 
 class Island:
+    """
+    The Island class is used to help generate the world map. It is used to generate the world map and to generate the world map's terrain.
+    """
     def AddRandomPointsToGrid(grid, numPoints, gauss=False, mean=0, std=0):
         for i in range(0,numPoints):
             if gauss == False:

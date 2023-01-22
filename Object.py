@@ -2,10 +2,20 @@
 """
 Object.py - This file contains the WorldObjects class and the Item class.
 I think I will add enums to this file.
+
+Classes
+-------
+WorldObjects
+    This class contains the objects that can be found in the world. These are the enums.
+Item
+    This class contains the items that can be found in the world.
 """
 
 
 class WorldObjects:
+    """
+    This class contains the objects that can be found in the world. These are the enums.
+    """
     TREE = [5,0]
     FLOWER = [1,1]
     MINE = [10,2]
@@ -21,6 +31,9 @@ class WorldObjects:
             return WorldObjects.SPEC
 
 class Item:
+    """
+    This class contains the items that can be found in the world.
+    """
     def __init__(self,world=None):
         self.world = world
         self.name = "Item"
