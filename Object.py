@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+Object
+======
 Object.py - This file contains the WorldObjects class and the Item class.
 I think I will add enums to this file.
 
-Classes
--------
-WorldObjects
-    This class contains the objects that can be found in the world. These are the enums.
-Item
-    This class contains the items that can be found in the world.
+.. todo::   
+      Add more clear enums to this file. Further flesh out the item class.
 """
 
 
@@ -21,6 +19,18 @@ class WorldObjects:
     MINE = [10,2]
     SPEC = [15,3]
     def ReturnObj(objNm):
+        """Returns the object based on the number.
+        
+        Parameters
+        ----------
+        objNm : int
+            The number of the object.
+
+        Returns
+        -------
+        WorldObjects
+            The object.
+        """
         if objNm == 2:
             return WorldObjects.TREE
         elif objNm == 1:

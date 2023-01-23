@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 """
+World
+=====
 World.py - Contains the World and Island classes. This script is used to generate the world.
 
-Classes
--------
-World
-    This class is used to generate the world.
-Island
-    This class is used to generate the island.
+.. todo::
+    Consider fixing the x,y coordinates. They are currently backwards.
 """
 
 
@@ -46,6 +44,13 @@ class World:
         self.atk = []
         
     def CreateWorld(self,grid=None):
+        """Creates the world.
+        
+        Parameters
+        ----------
+        grid : list
+            The grid to use.
+        """
         if grid is not None:
             self.wmap = grid
         for n,i in enumerate(self.wmap):
@@ -68,6 +73,15 @@ class World:
             self.CreateRandomHollowBox2(mx=15,mn=5)
 
     def CreateRandomHollowBox2(self,mx=None,mn=None):
+        """Creates a random hollow box. The resulting box will deconflict with other boxes.
+        
+        Parameters
+        ----------
+        mx : int
+            The maximum size of the box.
+        mn : int
+            The minimum size of the box.
+        """
         maxiter = 500
         iter = 0
         while True:
@@ -111,6 +125,15 @@ class World:
         self.CreateHollowBox2(x,y,w,h)
 
     def CreateRandomHollowBox(self,mx=None,mn=None):
+        """Creates a random hollow box.
+        
+        Parameters
+        ----------
+        mx : int
+            The maximum size of the box.
+        mn : int
+            The minimum size of the box.
+        """
         while True:
             x = int(rnd()*(self.xmax - self.xmin))
             y = int(rnd()*(self.ymax - self.ymin))
@@ -133,6 +156,17 @@ class World:
         self.CreateHollowBox(x,y,w,h)
 
     def CreateHollowCircle(self,x,y,r):
+        """Creates a hollow circle.
+        
+        Parameters
+        ----------
+        x : int
+            The x coordinate of the circle.
+        y : int
+            The y coordinate of the circle.
+        r : int
+            The radius of the circle.
+        """
         pi = 3.1415926
         for ang in range(0,360):
             _x = int(x + r * cos(ang*pi/180))#pi = 
@@ -149,6 +183,20 @@ class World:
 
 
     def CreateHollowBox(self,x,y,w,h): #Wow I need to fix the coordinates, there will be a future issue with this
+        """Creates a hollow box. Called from CreateRandomHollowBox.
+        
+        Parameters
+        ----------
+        x : int
+            The x coordinate of the box.
+        y : int
+            The y coordinate of the box.
+        w : int
+            The width of the box.
+        h : int
+            The height of the box.
+
+        """
         if x+h >= self.ymax:
             h = self.ymax - x
         if y+w >= self.xmax:
@@ -200,6 +248,19 @@ class World:
                         self.wmap[i][j] = 0
 
     def CreateHollowBox2(self,x,y,w,h): #Wow I need to fix the coordinates, there will be a future issue with this
+        """Creates a hollow box. Called from CreateRandomHollowBox2.
+        
+        Parameters
+        ----------
+        x : int
+            The x coordinate of the box.
+        y : int
+            The y coordinate of the box.
+        w : int
+            The width of the box.
+        h : int
+            The height of the box.
+        """
         if x+h >= self.ymax:
             h = self.ymax - x
         if y+w >= self.xmax:
@@ -228,9 +289,31 @@ class World:
 
 
     def AlterWorld(self,x,y,nm):
+        """Alters the world map at a given coordinate.
+        
+        Parameters
+        ----------
+        x : int
+            The x coordinate of the box.
+        y : int
+            The y coordinate of the box.
+        nm : int
+            The new value of the coordinate.
+        """
         self.wmap[x][y] = nm
     
     def AddPlayer(self,player,x=None,y=None):
+        """Adds a player to the world.
+        
+        Parameters
+        ----------
+        player : Player
+            The player to be added.
+        x : int
+            The x coordinate of the player.
+        y : int
+            The y coordinate of the player.
+        """
         wm = self.wmap
         if x is None:
             # x = int(rnd()*(self.xmax - self.xmin))
@@ -251,6 +334,17 @@ class World:
             self.pdict["Player"].append([player,x,y,trn])
             
     def AddEnemy(self,enemy,x=None,y=None):
+        """Adds an enemy to the world.
+        
+        Parameters
+        ----------
+        enemy : Enemy
+            The enemy to be added.
+        x : int
+            The x coordinate of the enemy.
+        y : int
+            The y coordinate of the enemy.
+        """
         wm = self.wmap
         if x is None:
             while True:
@@ -265,6 +359,15 @@ class World:
             self.pdict["Enemy"].append([enemy,x,y,trn])
             
     def UpdateWorld(self, pOnly=False, eOnly=False):
+        """Updates the world.
+        
+        Parameters
+        ----------
+        pOnly : bool
+            If True, only updates the player.
+        eOnly : bool
+            If True, only updates the enemy.
+        """
         if not eOnly:
             for pl in self.pdict["Player"]:
                 if pl[0].px is not None or pl[0].py is not None:
@@ -300,6 +403,26 @@ class Island:
     The Island class is used to help generate the world map. It is used to generate the world map and to generate the world map's terrain.
     """
     def AddRandomPointsToGrid(grid, numPoints, gauss=False, mean=0, std=0):
+        """Adds random points to a grid.
+        
+        Parameters
+        ----------
+        grid : list
+            The grid to add points to.
+        numPoints : int
+            The number of points to add.
+        gauss : bool
+            If True, the points will be added in a gaussian distribution.
+        mean : int
+            The mean of the gaussian distribution.
+        std : int
+            The standard deviation of the gaussian distribution.
+
+        Returns
+        -------
+        list
+            The grid with the points added.
+        """
         for i in range(0,numPoints):
             if gauss == False:
                 x = random.randint(0,len(grid)-1)
@@ -318,6 +441,18 @@ class Island:
         return grid
 
     def ChangeIsolatedPoints(grid):
+        """Changes isolated points to water or grass depending on the adjacent tiles.
+        
+        Parameters
+        ----------
+        grid : list
+            The grid to change.
+        
+        Returns
+        -------
+        list
+            The changed grid.
+        """
         for i in range(0,len(grid)):
             for j in range(0,len(grid[0])):
                 if grid[i][j] == 1:
@@ -374,6 +509,20 @@ class Island:
         return grid
 
     def ConnectToContinent(grid,rng=1):
+        """Connects the island to the continent.
+        
+        Parameters
+        ----------
+        grid : list
+            The grid to connect.
+        rng : int
+            The range of the connection.
+
+        Returns
+        -------
+        list
+            The connected grid.
+        """
         ngrid = [[0 for i in range(0,len(grid[0]))] for j in range(0,len(grid))]
         for i in range(0,len(grid)):
             for j in range(0,len(grid[0])):
@@ -397,9 +546,35 @@ class Island:
         return grid
 
     def DiscreteGaussianDraw(mean, std):
+        """Draws a random number from a discrete gaussian distribution.
+        
+        Parameters
+        ----------
+        mean : int
+            The mean of the gaussian distribution.
+        std : int
+            The standard deviation of the gaussian distribution.
+
+        Returns
+        -------
+        int
+            The random number.
+        """
         return int(random.gauss(mean,std))
 
     def ConvertGrid(grid):
+        """Will convert a grid of 0s and 1s to a grid of 7s and 0s.
+        
+        Parameters
+        ----------
+        grid : list
+            The grid to convert.
+
+        Returns
+        -------
+        list
+            The converted grid.
+        """
         for i in range(0,len(grid)):
             for j in range(0,len(grid[0])):
                 if grid[i][j] == 0:
@@ -409,6 +584,18 @@ class Island:
         return grid
 
     def ConnectRandomPoints(grid):
+        """Connects random points together to form islands.
+        
+        Parameters
+        ----------
+        grid : list
+            The grid to connect.
+
+        Returns
+        -------
+        list
+            The connected grid.
+        """
         for i in range(0,len(grid)):
             for j in range(0,len(grid[0])):
                 i = len(grid)-1-i #To my eye, the resulting map looks better if the points are connected from the bottom up
@@ -435,6 +622,18 @@ class Island:
         return grid
 
     def CountLand(grid):
+        """Counts the number of land tiles in a grid.
+        
+        Parameters
+        ----------
+        grid : list
+            The grid to count.
+
+        Returns
+        -------
+        int
+            The number of land tiles.
+        """
         cnt = 0
         for i in range(0,len(grid)):
             for j in range(0,len(grid[0])):
@@ -443,6 +642,20 @@ class Island:
         return cnt
 
     def CreateGrid(x,y):
+        """Creates a grid of 0s.
+        
+        Parameters
+        ----------
+        x : int
+            The width of the grid.
+        y : int
+            The height of the grid.
+
+        Returns
+        -------
+        list
+            The grid of 0s.
+        """
         grid = []
         for i in range(0,x):
             grid.append([])
@@ -452,6 +665,17 @@ class Island:
 
 
     def ProgressBar(cnt, total, pct):
+        """Creates a progress bar.
+        
+        Parameters
+        ----------
+        cnt : int
+            The current count.
+        total : int
+            The total count.
+        pct : float
+            The percentage of the total count to display.
+        """
         cmd("cls")
         bar = ""
         cur = int(cnt/total/pct*100)/10

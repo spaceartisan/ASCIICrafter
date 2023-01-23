@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 """
+Entities
+========
 Entities.py - This file contains the Player and Enemy classes. 
 
-Classes
--------
-Player
-    This class contains the player's stats and methods.
-Enemy
-    This class contains the enemy's stats and methods.
+.. todo::
+    Add more enemies.
+    Add more enemy types.
+    Add more enemy AI.
+    Add robust player inventory.
 """
 
 from time import sleep
@@ -46,11 +47,27 @@ class Player:
         self.consoleMsg = None
     
     def Cooldown(self,id=None,tm=None):
+        """Sets a cooldown for the player's actions.
+        
+        Parameters
+        ----------
+        id : int
+            The ID of the action.
+        tm : float
+            The time to wait before the cooldown is over.
+        """
         self.cooldown[id] = True
         sleep(tm)
         self.cooldown[id] = False
 
     def GainExperience(self,amt=None):
+        """Gains experience for the player.
+        
+        Parameters
+        ----------
+        amt : int
+            The amount of experience to gain.
+        """
         self.consoleMsg = f"  Gained {amt} EXP  "
         self.EXP += amt
         # if self.EXP >= 100:
@@ -58,6 +75,17 @@ class Player:
         #     self.LevelUp()
 
     def UpdateInventory(self,ty=None,amt=None,playSound=True):
+        """Updates the player's inventory.
+        
+        Parameters
+        ----------
+        ty : int
+            The type of item to update.
+        amt : int
+            The amount to update.
+        playSound : bool
+            Whether or not to play a sound.
+        """
         if ty == 0:
             if self.WOOD < 100-amt:
                 self.WOOD += amt
@@ -75,6 +103,25 @@ class Player:
                 self.world.sounds.append(6)
     
     def Action(self,harvest=None,craft=None,build=None,fight=None,nm=None,x=None,y=None):
+        """Performs an action for the player.
+        
+        Parameters
+        ----------
+        harvest : bool
+            Whether or not to harvest.
+        craft : bool
+            Whether or not to craft.
+        build : bool
+            Whether or not to build.
+        fight : bool
+            Whether or not to fight.
+        nm : str
+            The name of the object to interact with.
+        x : int
+            The x position of the object to interact with.
+        y : int
+            The y position of the object to interact with.
+        """
         if harvest is not None and nm not in [0,5]:
             if self.cooldown[0]:
                 return
@@ -128,11 +175,21 @@ class Player:
 
     
     def CancelAction(self):
+        """Cancels the player's current action."""
         if self.harvest:
             self.harvest = False
             self.hstats = None
     
     def PosUpdate(self,x,y):
+        """Updates the player's position.
+        
+        Parameters
+        ----------
+        x : int
+            The x position to update to.
+        y : int
+            The y position to update to.
+        """
         # if x < 0:
         #     x = 0
         # if y < 0:
@@ -143,6 +200,7 @@ class Player:
         self.py = y
         
     def ClearPUpdate(self):
+        """Clears the player's position update."""
         self.px = None
         self.py = None
         t2 = threading.Thread(target=self.Cooldown, args=(1,0.2,))
@@ -168,6 +226,22 @@ class Enemy:
         
 
     def UpdateBehavior(self,x,y):
+        """Updates the enemy's behavior.
+        
+        Parameters
+        ----------
+        x : int
+            The x position of the enemy.
+        y : int
+            The y position of the enemy.
+
+        Returns
+        -------
+        x : int
+            The updated x position of the enemy.
+        y : int
+            The updated y position of the enemy.
+        """
         if self.dcount >= self.delay:
             self.lastDir = random.randint(1,4)
             ld = self.lastDir

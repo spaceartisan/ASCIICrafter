@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 """
+ASCIICrafter
+============
 ASCIICrafter - A simple ASCII game engine
 This is the top level main file. It is used to run the game.
+
+
 """
+
 from os import system as cmd
 from time import sleep
 import threading
@@ -10,12 +15,11 @@ import threading
 from Console import Console, Sound, GetInput
 from Entities import Player, Enemy
 from World import World, Island
-
    
 
-if __name__ == "__main__":
+def main():
     """
-    This is the main function. It is used to run the game.
+    This is the main function which runs the main game loop. It instantiates the world, player, and console.
     """
     cmd('cls')
     # random.seed(1236489)
@@ -101,5 +105,8 @@ if __name__ == "__main__":
     cmd('cls')
     cmd("ECHO Thank you for playing!    ...TeeHee")
     cmd('pause')
+
+if __name__ == "__main__":
+    main()
 
     
