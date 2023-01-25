@@ -12,6 +12,9 @@ python:
       path: .
 
 
+submodules:
+  include: all
+
 sphinx:
   fail_on_warning: true
 
