@@ -131,10 +131,41 @@ Iron Sword
 A basic weapon that can be crafted from iron. It can be used to attack enemies.
 
 
+Classes and Functions
+=====================
 
 .. toctree::
 
-   code
+.. automodule:: ASCIICrafter
+   :autosummary:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: Console
+   :autosummary:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: Entities
+   :autosummary:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: Object
+   :autosummary:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: World
+   :autosummary:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
    
 Indices and tables
