@@ -12,7 +12,7 @@ from os import system as cmd
 from time import sleep
 import threading
 
-from Console import Console, Sound, GetInput
+from Console.Console import Console, Sound, GetInput
 from Entities import Player, Enemy
 from World import World, Island
    
