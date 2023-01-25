@@ -9,3 +9,6 @@ dynamic = ["version", "description"]
 dependencies = [ 
    "Console.py"
 ]
+
+[tool.setuptools]
+packages = ["World", "Console", "Item", "WorldObjects"]
