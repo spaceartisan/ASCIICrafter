@@ -13,10 +13,9 @@
 import os
 import sys
 import mock
- 
 MOCK_MODULES = ['numpy', 'scipy', 'matplotlib', 'matplotlib.pyplot', 'scipy.interpolate', 'ctypes','msvcrt']
 for mod_name in MOCK_MODULES:
-sys.modules[mod_name] = mock.Mock()
+    sys.modules[mod_name] = mock.Mock()
 sys.path.insert(0, os.path.abspath('../..'))
 
 
