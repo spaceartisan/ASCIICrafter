@@ -8,4 +8,4 @@ authors = [{name = "Graziella", email = "spaceartisan@gmail.com"}]
 dynamic = ["version", "description"]
 
 [tool.setuptools]
-packages = ["World", "Console", "Item", "WorldObjects"]
+packages = ["World", "Console.py", "Item", "WorldObjects"]
