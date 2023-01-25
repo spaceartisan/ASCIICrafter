@@ -13,7 +13,7 @@ Additionally GetInput() is used to get input from the user. In the future these 
     Add more colors.
 """
 
-from ctypes import create_unicode_buffer, windll
+from ctypes import create_unicode_buffer
 import curses
 from sys import exit as ext
 import msvcrt
