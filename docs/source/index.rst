@@ -131,8 +131,6 @@ Iron Sword
 A basic weapon that can be crafted from iron. It can be used to attack enemies.
 
 
-Classes and Functions
-=====================
 
 .. toctree::
 
