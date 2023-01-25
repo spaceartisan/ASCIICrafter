@@ -6,9 +6,6 @@ build-backend = "flit_core.buildapi"
 name = "ASCIICrafter"
 authors = [{name = "Graziella", email = "spaceartisan@gmail.com"}]
 dynamic = ["version", "description"]
-dependencies = [ 
-   "Console.py"
-]
 
 [tool.setuptools]
 packages = ["World", "Console", "Item", "WorldObjects"]
