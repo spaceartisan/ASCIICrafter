@@ -4,4 +4,3 @@ sphinx_rtd_theme==1.1.1
 readthedocs-sphinx-search==0.1.1
 sphinx--autoapi==1.8.4
 autodocsumm==0.2.10
-ctypes==1.0.2
