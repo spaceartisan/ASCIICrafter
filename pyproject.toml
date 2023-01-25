@@ -7,5 +7,5 @@ name = "ASCIICrafter"
 authors = [{name = "Graziella", email = "spaceartisan@gmail.com"}]
 dynamic = ["version", "description"]
 dependencies = [ 
-   "Console"
+   "Console.py"
 ]
