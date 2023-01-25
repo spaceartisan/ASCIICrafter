@@ -30,7 +30,7 @@ release = 'Jan 22, 2023'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.napoleon','sphinx.ext.autosummary','sphinx.ext.viewcode','sphinx.ext.todo','sphinx.ext.autosectionlabel','autodocsumm']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.napoleon','sphinx.ext.autosummary','sphinx.ext.viewcode','sphinx.ext.todo','sphinx.ext.autosectionlabel']
 autosummary_generate = True
 todo_include_todos = True
 # Add any paths that contain templates here, relative to this directory.
