@@ -136,7 +136,7 @@ Classes and Functions
 
 .. toctree::
 
-   Code
+   code
 
    
 Indices and tables
