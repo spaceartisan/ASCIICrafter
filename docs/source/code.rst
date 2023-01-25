@@ -1,3 +1,6 @@
+Classes and Functions
+=====================
+
 .. automodule:: ASCIICrafter
    :autosummary:
    :members:
