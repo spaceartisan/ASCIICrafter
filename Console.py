@@ -255,8 +255,9 @@ class Console:
             wxmx = 15
             wymx = 15
             self.redrawing = False
-            self.stdscr.addstr(4,(wxmx*2+1)*3," ########################")
-            self.stdscr.addstr(5,(wxmx*2+1)*3," #Ye Player Stats Here:##")
+            self.stdscr.addstr(3,(wxmx*2+1)*3," ########################")
+            self.stdscr.addstr(4,(wxmx*2+1)*3," #Ye Player Stats Here:##")
+            self.stdscr.addstr(5,(wxmx*2+1)*3,f" #Health: {self.player.hp:03d}             #")
             self.stdscr.addstr(6,(wxmx*2+1)*3,f" #Wood: {self.player.WOOD:03d}             #")
             self.stdscr.addstr(7,(wxmx*2+1)*3,f" #Flowers: {self.player.PLANT:03d}          #")
             self.stdscr.addstr(8,(wxmx*2+1)*3,f" #Ore: {self.player.ORE:03d}              #")

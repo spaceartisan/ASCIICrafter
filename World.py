@@ -42,8 +42,9 @@ class World:
         self.exit = False
         self.sounds = []
         self.atk = []
+
         
-    def CreateWorld(self,grid=None):
+    def CreateWorld(self,grid=None,buildings=None):
         """Creates the world.
         
         Parameters
@@ -69,7 +70,9 @@ class World:
                 else:
                     self.wmap[n][m] = 4 #Special
         # self.CreateRandomHollowBox()
-        for _ in range(0,50):
+        if buildings is None:
+            return
+        for _ in range(0,buildings):
             self.CreateRandomHollowBox2(mx=15,mn=5)
 
     def CreateRandomHollowBox2(self,mx=None,mn=None):
@@ -327,6 +330,8 @@ class World:
                 y = int(rnd()*(self.ymax - self.ymin))
             trn = wm[x][y]
             player.PosUpdate(x,y)
+            player.initx = x
+            player.inity = y
             self.pdict["Player"].append([player,x,y,trn])
         else:
             trn = wm[x][y]

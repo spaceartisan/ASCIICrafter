@@ -15,6 +15,7 @@ from time import sleep
 import threading
 import random
 from Object import WorldObjects, Item
+from math import atan2, degrees, pi, radians
 
 class Player:
     """
@@ -32,7 +33,7 @@ class Player:
     ORE = 0
     SPEC = 0
     EXP = 0
-    def __init__(self,ids=None,world=None):
+    def __init__(self,ids=None,world=None, initx=None, inity=None):
         self.world = world
         self.hp = 10
         self.axe = 0
@@ -45,6 +46,8 @@ class Player:
         self.hstats = None
         self.cooldown = [False,False] #Harves, Movement
         self.consoleMsg = None
+        self.initx = None
+        self.inity = None
     
     def Cooldown(self,id=None,tm=None):
         """Sets a cooldown for the player's actions.
@@ -127,6 +130,9 @@ class Player:
                 return
             if self.harvest == False:
                 self.harvest = True
+                if WorldObjects.ReturnObj(nm) == None:
+                    self.harvest = False
+                    return
                 self.hstats = [x for x in WorldObjects.ReturnObj(nm)]
             self.hstats[0] -= 1
             self.world.sounds.append(0)
@@ -160,6 +166,8 @@ class Player:
                 x += 1
             elif nm == "M":
                 y += 1
+            if x >= self.world.xmax or y >= self.world.ymax or x < 0 or y < 0:
+                return
             if self.world.wmap[x][y] == 6:
                 self.world.AlterWorld(x,y,5)
                 self.world.sounds.append(4)
@@ -172,7 +180,21 @@ class Player:
                 t1 = threading.Thread(target=self.Cooldown,args=(0,0.35,))
                 t1.start()
 
-
+    def DealDamage(self,amt=None):
+        """Deals damage to the player.
+        
+        Parameters
+        ----------
+        amt : int
+            The amount of damage to deal.
+        """
+        self.hp -= amt
+        if self.hp <= 0:
+            self.world.sounds.append(7)
+            self.hp = 10
+            self.PosUpdate(self.initx,self.inity)
+        else:
+            self.world.sounds.append(0)
     
     def CancelAction(self):
         """Cancels the player's current action."""
@@ -223,7 +245,86 @@ class Enemy:
         self.radius = 10
         self.delay = 1
         self.dcount = 0
+
+    def Aggro(self,x,y):
+        """Checks if the enemy is in range of the player.
         
+        Parameters
+        ----------
+        x : int
+            The x position of the enemy.
+        y : int
+            The y position of the enemy.
+
+        Returns
+        -------
+        bool
+            Whether or not the enemy is in range of the player.
+        """
+        pl, px, py, tr = self.world.pdict['Player'][0]
+        if pl is not None:
+            if pl.hp > 0:
+                if abs(px - x) <= self.radius and abs(py - y) <= self.radius: # 0 deg is down positive is counter clockwise
+                    enemyToPlayer = atan2(py - y, px - x)
+                    if enemyToPlayer > 0 and enemyToPlayer <= radians(90):
+                        quad = 1 # bottom right
+                    elif enemyToPlayer > radians(90) and enemyToPlayer <= radians(180):
+                        quad = 2 # top right
+                    elif enemyToPlayer > -radians(90) and enemyToPlayer <= 0:
+                        quad = 4 # bottom left
+                    elif enemyToPlayer > -radians(180) and enemyToPlayer <= -radians(90):
+                        quad = 3 # top left
+                    try:
+                        bup = self.world.wmap[x-1][y] == 6 or self.world.wmap[x-1][y] == 7
+                    except:
+                        bup = False
+                    try:
+                        bdown = self.world.wmap[x+1][y] == 6 or self.world.wmap[x+1][y] == 7
+                    except:
+                        bdown = False
+                    try:
+                        bleft = self.world.wmap[x][y-1] == 6 or self.world.wmap[x][y-1] == 7
+                    except:
+                        bleft = False
+                    try:
+                        bright = self.world.wmap[x][y+1] == 6 or self.world.wmap[x][y+1] == 7
+                    except:
+                        bright = False
+                    if (abs(py - y) == 0 and abs(px - x) == 1) or (abs(py - y) == 1 and abs(px - x) == 0):
+                        return False, 0, True, pl
+                    if enemyToPlayer <= radians(45) and enemyToPlayer > -radians(45): # PLayer is below enemy
+                        # print(f"q:{quad} bup:{bup} bdown:{bdown} bleft:{bleft} bright:{bright} enemyToPlayer:{degrees(enemyToPlayer)}")
+                        val = 1
+                        if quad == 1 and bdown:
+                            val = 2
+                        elif quad == 4 and bdown:
+                            val = 4
+                        return True, val, False, None 
+                    elif enemyToPlayer <= radians(135) and enemyToPlayer > radians(45):# Player is right of enemy
+                        val = 2
+                        # print(f"q:{quad} bup:{bup} bdown:{bdown} bleft:{bleft} bright:{bright} enemyToPlayer:{degrees(enemyToPlayer)}")
+                        if quad == 1 and bright:
+                            val = 1
+                        elif quad == 2 and bright:
+                            val = 3
+                        return True, val, False, None 
+                    elif enemyToPlayer <= -radians(45) and enemyToPlayer > -radians(135): # Player is left of enemy
+                        # print(f"q:{quad} bup:{bup} bdown:{bdown} bleft:{bleft} bright:{bright} enemyToPlayer:{degrees(enemyToPlayer)}")
+                        val = 4
+                        if quad == 3 and bleft:
+                            val = 3
+                        elif quad == 4 and bleft:
+                            val = 1
+                        return True, val, False, None
+                    else: # Player is above enemy
+                        # print(f"q:{quad} bup:{bup} bdown:{bdown} bleft:{bleft} bright:{bright} enemyToPlayer:{degrees(enemyToPlayer)}")
+                        val = 3
+                        if quad == 2 and bup:
+                            val = 2
+                        elif quad == 3 and bup:
+                            val = 4
+                        return True, val, False, None
+        return False, 0, False, None
 
     def UpdateBehavior(self,x,y):
         """Updates the enemy's behavior.
@@ -243,16 +344,24 @@ class Enemy:
             The updated y position of the enemy.
         """
         if self.dcount >= self.delay:
-            self.lastDir = random.randint(1,4)
+            seePlayer, newDir, attack, pl = self.Aggro(x,y)
+            if attack:
+                pl.DealDamage(2)
+                self.dcount = 0
+                return x,y
+            if seePlayer:
+                self.lastDir = newDir
+            else:
+                self.lastDir = random.randint(1,4)
             ld = self.lastDir
             if ld == 1:
-                x += 1
+                x += 1 #Go down
             elif ld == 2:
-                y += 1
+                y += 1 #Go right
             elif ld == 3:
-                x -= 1
+                x -= 1 #Go up
             elif ld == 4:
-                y -= 1
+                y -= 1  #Go left
             if self.lastDir == 4:
                 self.lastDir = 0
             self.dcount = 0

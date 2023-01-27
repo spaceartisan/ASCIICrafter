@@ -2,6 +2,7 @@
 *vscode
 *.spec
 *.pyc
+*.pkl
 
 #Hiding folders from the file explorer
 build/
