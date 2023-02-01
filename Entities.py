@@ -48,6 +48,7 @@ class Player:
         self.consoleMsg = None
         self.initx = None
         self.inity = None
+        self.cdown = 0.25
     
     def Cooldown(self,id=None,tm=None):
         """Sets a cooldown for the player's actions.
@@ -141,7 +142,7 @@ class Player:
                 self.world.AlterWorld(x,y,5)
                 self.CancelAction()
             else:
-                t1 = threading.Thread(target=self.Cooldown,args=(0,0.35,))
+                t1 = threading.Thread(target=self.Cooldown,args=(0,self.cdown,))
                 t1.start()
         if build is not None:
             if self.cooldown[0]:
@@ -150,7 +151,7 @@ class Player:
                 self.UpdateInventory(0,-1)
                 self.world.AlterWorld(x,y,6)
                 self.world.sounds.append(4)
-                t1 = threading.Thread(target=self.Cooldown,args=(0,0.35,))
+                t1 = threading.Thread(target=self.Cooldown,args=(0,self.cdown,))
                 t1.start()
                 return True
             else:
@@ -172,12 +173,27 @@ class Player:
                 self.world.AlterWorld(x,y,5)
                 self.world.sounds.append(4)
                 self.UpdateInventory(0,1,False)
-                t1 = threading.Thread(target=self.Cooldown,args=(0,0.35,))
+                t1 = threading.Thread(target=self.Cooldown,args=(0,self.cdown,))
+                t1.start()
+            elif self.world.wmap[x][y] == 7:
+                if self.WOOD >= 1 and self.ORE >= 1:
+                    self.UpdateInventory(0,-1)
+                    self.UpdateInventory(2,-1)
+                    self.world.AlterWorld(x,y,9)
+                    self.world.sounds.append(4)
+                    t1 = threading.Thread(target=self.Cooldown,args=(0,self.cdown,))
+                    t1.start()
+            elif self.world.wmap[x][y] == 9:
+                self.UpdateInventory(0,1,False)
+                self.UpdateInventory(2,1, False)
+                self.world.AlterWorld(x,y,7)
+                self.world.sounds.append(4)
+                t1 = threading.Thread(target=self.Cooldown,args=(0,self.cdown,))
                 t1.start()
             else:
                 self.world.atk = [x,y,self]
                 self.world.sounds.append(0)
-                t1 = threading.Thread(target=self.Cooldown,args=(0,0.35,))
+                t1 = threading.Thread(target=self.Cooldown,args=(0,self.cdown,))
                 t1.start()
 
     def DealDamage(self,amt=None):
@@ -225,7 +241,7 @@ class Player:
         """Clears the player's position update."""
         self.px = None
         self.py = None
-        t2 = threading.Thread(target=self.Cooldown, args=(1,0.2,))
+        t2 = threading.Thread(target=self.Cooldown, args=(1,self.cdown,))
         t2.start()
 
 class Enemy:
@@ -370,5 +386,6 @@ class Enemy:
             if y < 0:
                 y = 0
         else:
+            # sleep(0.1)
             self.dcount += 0.1
         return x,y
