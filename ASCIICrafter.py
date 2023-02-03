@@ -14,6 +14,7 @@ Bug List
 - Screen does not fully draw sometimes, don't know how to force the bug. (The AI thinks it's because the screen is not fully cleared. I should investigate this.)
 - Despite having a cooldown timer, the movements are inconsistent if the player holds down a key.
 - When the sound starts at the same time as the first DrawWorld, the curses will not be drawn
+- When the background is paused, the volume is decreased after unpausing.
 """
 
 from os import system as cmd
@@ -130,7 +131,11 @@ def loadWorld(filename):
 
 
 def NewWorld(n, enemySpawn, seed, save, load, buildings, simplify, firstRun):
-    sounds = Sound("sounds\\bg\\eb.mp3")
+    if firstRun:
+        bgm = "sounds\\bg\\eb.mp3"
+    else:
+        bgm = "sounds\\bg\\ab.mp3"
+    sounds = Sound(bgm)
     console = Console(firstRun=firstRun)
     #Needs to be same height and width because I mixed up x and y. Kinda a deep fix...
     # world.CreateWorld()
@@ -139,8 +144,8 @@ def NewWorld(n, enemySpawn, seed, save, load, buildings, simplify, firstRun):
     # Island Generation
     ##########################################################################
 
-    if seed is not None:
-        random.seed(seed)
+    # if seed is not None:
+    #     random.seed(seed)
     if firstRun:
         world = World(0,1,0,1)
         firstRun = False
@@ -250,12 +255,14 @@ def main():
     simplify = False #This is used for debugging purposes.
     n, enemySpawn, seed, save, load, buildings = parseInput()
     # seed = 1675142236
-    if seed is None:
-        seed = round(time())
-    firstRun = False
+    # if seed is None:
+    #     seed = round(time())
+    firstRun = True
     while True:
         console, world = NewWorld(n, enemySpawn, seed, save, load, buildings, simplify, firstRun)
-        seed = round(time())
+        if firstRun:
+            firstRun = False
+        # seed = round(time())
         load = console.load
         if world.fullExit:
             break

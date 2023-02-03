@@ -59,7 +59,7 @@ class Console:
         self.saveMetaName = ""
         self.getLoadsOnce = True
         self.loads = []
-        self.firstRun = False
+        self.startMenu = firstRun
         self.action1 = "                    "
         self.action2 = "                    "
         self.stats = "                    "
@@ -106,6 +106,52 @@ class Console:
         """
         self.x, self.y = x,y
         
+    def StartMenu(self):
+        """
+        This function draws the start menu.
+        """
+        longestText = "Do you have the will to survive?"
+        x = int(round(self.x/2))-1
+        y = int(round(self.y/2))-1 
+        if self.startMenu:
+            self.stdscr.erase()
+            self.stdscr.addstr(1,0,"                                         @                                      ")
+            self.stdscr.addstr(2,0,"                                    (@&&&&    @#                                ")
+            self.stdscr.addstr(3,0,"                             %&&&&&&&&&&&&&&&&&  &                              ")
+            self.stdscr.addstr(4,0,"                          &&&&&&&&&&&&&&&&&&&&&&&,    *.                        ")
+            self.stdscr.addstr(5,0,"                        &&&&&&&&&&&&&&&&&&&&&&&*,@@&&&                          ")
+            self.stdscr.addstr(6,0,"                     @&&&&&&&&&&&&&&&&&&&&&&&&&&&&&@&&&                         ")
+            self.stdscr.addstr(7,0,"                   @&&&,,,,,%@&&&&&&&&&&&&&@@/,,,,,/&&&&                        ")
+            self.stdscr.addstr(8,0,"                  &&&&@,,,,,,,,,,,,,,,,,,,,,,,,,,,,,@&&&&                       ")
+            self.stdscr.addstr(9,0,"                 @&&&&,,,,,,,,,,,,,,,,,,,,,,,,,/&*,,,@&&&@                      ")
+            self.stdscr.addstr(10,0,"                 &&&&&,,,,,,#   *,,,,,,,,,,,,% /(,,,,,&&&&                      ")
+            self.stdscr.addstr(11,0,"                .&&&&@,,,,@      /,,,,,,,,,       ,,,,@&&&@                     ")
+            self.stdscr.addstr(12,0,"                *&&&&%,,,,   ,@   ,,,,,,,,,   @   ,,,,,&&&&                     ")
+            self.stdscr.addstr(13,0,"                *&&&&,,,,,#      &,,,,,,,,,%     *,,,,,/&&&                     ")
+            self.stdscr.addstr(14,0,"                 &&*,,,,,,,,,,,,,,,,,,,,,,,,*,,,,,,,,,,,,&&                     ")
+            self.stdscr.addstr(15,0,"                 &&*,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,&&                     ")
+            self.stdscr.addstr(16,0,"                 &&*,,,,,,,,,,&&(@&,,,,,,,&@@@,,,,,,,,,,,&&                     ")
+            self.stdscr.addstr(17,0,"                 &&@,,,&&&&&&&&&&&&&(,,,@&&&&&&&&&&&&,,,(&@                     ")
+            self.stdscr.addstr(18,0,"                  &&*,&&&&&&&&@&&@&&@&&&&&&@&&@&&&@&&&%,&&                      ")
+            self.stdscr.addstr(19,0,"                   &&*,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,(&@                       ")
+            self.stdscr.addstr(20,0,"                     &@,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,@&.                        ")
+            self.stdscr.addstr(21,0,"                      @&,,,,,,,,,,,,,,,,,,,,,,,,,,,,&@                          ")
+            self.stdscr.addstr(22,0,"                         /,,,,,,,,,,,,,,,,,,,,,,,,,                             ")
+            self.stdscr.addstr(23,0,"                          (,,,,,,,,,@##@&,,,,,,,,*                              ")
+            self.stdscr.addstr(24,0,"                           *,,,,,,,,,,,,,,,,,,,,,                               ")
+            self.stdscr.addstr(25,0,"                           *,,,,,,,,,,,,,,,,,,,,@                               ")
+            self.stdscr.addstr(26,0,"                            ,,,,,,,,,,,,,,,,,,,,,                               ")
+            self.stdscr.addstr(y,x,f"{'Welcome to ASCIICrafter!': ^35}")
+            self.stdscr.addstr(y+1,x,f"{'Do you have the will to survive?': ^35}")
+            self.stdscr.addstr(y+2,x,f"{'Press any key to begin': ^35}")
+            self.stdscr.addstr(self.y-1,self.x-1,f"")
+            self.stdscr.refresh()
+            # self.sounds.pause = True
+            msvcrt.getch()
+            curses.resize_term(0,0)
+            self.stdscr.erase()
+            self.stdscr.refresh()
+
     def WorldRefresh(self,rate=0.1):
         """
         This function is threaded from ASCIICrafter.py and is the main loop to control the console.
@@ -122,15 +168,7 @@ class Console:
             self.stdscr.addstr(0,0,"Loading...")
             self.stdscr.refresh()
             sleep(1)
-        self.stdscr.erase()
-        self.stdscr.addstr(14,8*3,"Welcome to ASCIICrafter!")
-        self.stdscr.addstr(15,8*3,"     Press any Key")
-        self.stdscr.refresh()
-        # self.sounds.pause = True
-        input("")
-        sleep(0.1)
-        self.sounds.nbg = "sounds\\bg\\ab.mp3"
-        self.sounds.st = 0
+        self.StartMenu()
         sleep(0.1)
         while True:
             if self.world.exit:
@@ -144,7 +182,7 @@ class Console:
                 self.stdscr.clear()
                 self.stdscr.refresh()
             else:
-                if not self.menu:
+                if not self.menu and not self.startMenu:
                     self.DrawWorld()                        
                 else:
                     self.DrawMenu(ky=self.menuPage)
@@ -836,29 +874,22 @@ def GetInput(world,player,console,ts):
     while True:  
         if msvcrt.kbhit():         
             pressed = msvcrt.getch()
-            # console.saveKeyPress = f"{pressed} key press number {kyn}"
-            # print(f"{pressed} key press number {kyn}")
-            # kyn += 1
-            # continue
-            # if pressed == b'\x1b':
-            #     world.exit = True
-            #     ext()
-            for ply in world.pdict["Player"]: #I don't think this is the best way to do this, but it works for now (Already have reference to player)
+            if world.pdict["Player"] != []:
+                ply = world.pdict["Player"][0]
                 if ply[0].consoleMsg is not None:
                     console.DrawAction2(ply[0].consoleMsg)
                     ply[0].consoleMsg = None
-                if ply[0].ids == player:
-                    try:
-                        ky = pressed.decode()
+            if True:#ply[0].ids == player:
+                try:
+                    ky = pressed.decode()                    
+                    if not console.menu and not console.startMenu:
                         x = ply[1]
                         y = ply[2]
-                        # print(ply)
-                        if not console.menu:
-                            WorldKeyPresses(world, ply[0], x, y, console, ky)
-                        elif console.menu:
-                            MenuKeyPresses(world, console, ky)                           
-                        if ky == "m" and not console.typingEnabled and not console.confirmEnabled:
-                            console.menu = not console.menu
-                    except UnicodeDecodeError:
-                        pass
+                        WorldKeyPresses(world, ply[0], x, y, console, ky)
+                    elif console.menu or console.startMenu:
+                        MenuKeyPresses(world, console, ky)                           
+                    if ky == "m" and not console.typingEnabled and not console.confirmEnabled and not console.startMenu:
+                        console.menu = not console.menu
+                except UnicodeDecodeError:
+                    pass
             world.UpdateWorld(pOnly=True)

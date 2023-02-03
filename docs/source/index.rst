@@ -26,6 +26,9 @@ for the graphics. The game is still in development, but it is playable.
 
 | In the current version, you can move around, harvest blocks, place blocks, and attack enemies. Enemies don't attack right now and they feature random movement. Worlds are randomly generated, but they are not infinite. The resources and buildings are randomly generated as well.
 
+Link to game download:
+   `ASCIICrafter on itch.io - 2/3/2023 <https://spaceartisan.itch.io/ascii-crafter?secret=GGapy1EHqsFo7BSeUG6c7pXm10Y>`_
+
 The modifiable blocks are:
    * :flower:`; - Flowers`
    * :tree:`T - Trees`
@@ -36,10 +39,11 @@ The modifiable blocks are:
 
 The controls are as follows:
    * :kbd:`w`, :kbd:`a`, :kbd:`s`, :kbd:`d` - move the player
-   * :kbd:`up`, :kbd:`down`, :kbd:`left`, :kbd:`right` - attack or deconstruct in the direction
+   * :kbd:`up`, :kbd:`down`, :kbd:`left`, :kbd:`right` - attack or deconstruct in the direction (or places a bridge block)
    * :kbd:`space` - harvest the block you are standing on
+   * :kbd:`b` - places a wall block
    * :kbd:`p` - pauses the background music
-   * :kbd:`esc` - exits the game
+   * :kbd:`m` - brings up the menu
 
 
 Enemies
