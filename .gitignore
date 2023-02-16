@@ -2,8 +2,15 @@
 *vscode
 *.spec
 *.pyc
+*.pkl
+*.save
 
 #Hiding folders from the file explorer
 build/
 dist/
 sounds/
+saves/
+__pycache__/
+_build/
+_static/
+_templates/

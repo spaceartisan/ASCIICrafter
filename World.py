@@ -39,11 +39,15 @@ class World:
         self.time = 8.0
         self.wmap = [[0 for _j in range(xmin,xmax)] for _k in range(ymin,ymax)]
         self.pdict = {"Player" : [], "Enemy" : []}
+        self.menu = False
         self.exit = False
+        self.fullExit = False
         self.sounds = []
         self.atk = []
+        self.saveName = None
+
         
-    def CreateWorld(self,grid=None):
+    def CreateWorld(self,grid=None,buildings=None):
         """Creates the world.
         
         Parameters
@@ -69,7 +73,9 @@ class World:
                 else:
                     self.wmap[n][m] = 4 #Special
         # self.CreateRandomHollowBox()
-        for _ in range(0,50):
+        if buildings is None:
+            return
+        for _ in range(0,buildings):
             self.CreateRandomHollowBox2(mx=15,mn=5)
 
     def CreateRandomHollowBox2(self,mx=None,mn=None):
@@ -327,6 +333,8 @@ class World:
                 y = int(rnd()*(self.ymax - self.ymin))
             trn = wm[x][y]
             player.PosUpdate(x,y)
+            player.initx = x
+            player.inity = y
             self.pdict["Player"].append([player,x,y,trn])
         else:
             trn = wm[x][y]
@@ -402,7 +410,7 @@ class Island:
     """
     The Island class is used to help generate the world map. It is used to generate the world map and to generate the world map's terrain.
     """
-    def AddRandomPointsToGrid(grid, numPoints, gauss=False, mean=0, std=0):
+    def AddRandomPointsToGrid(grid, numPoints, gauss=False, mean=0, std=0, frac=1):
         """Adds random points to a grid.
         
         Parameters
@@ -422,14 +430,35 @@ class Island:
         -------
         list
             The grid with the points added.
+        xmin : int
+            The minimum x value of the points.
+        xmax : int
+            The maximum x value of the points.
+        ymin : int
+            The minimum y value of the points.
+        ymax : int
+            The maximum y value of the points.
+
         """
         for i in range(0,numPoints):
+            if frac != 1:
+                xm = int(round(len(grid)*(1-frac)/2))
+                ym = int(round(len(grid[0])*(1-frac)/2))
+                xmin = xm
+                xmax = len(grid)-xm
+                ymin = ym
+                ymax = len(grid[0])-ym
+            else:
+                xmin = 0
+                xmax = len(grid)
+                ymin = 0
+                ymax = len(grid[0])
             if gauss == False:
-                x = random.randint(0,len(grid)-1)
-                y = random.randint(0,len(grid[0])-1)
+                x = random.randint(xmin,xmax-1)
+                y = random.randint(ymin,ymax-1)
             else:
                 while True:
-                    nn = 40
+                    nn = 15
                     x = Island.DiscreteGaussianDraw(mean,std)+int(len(grid)/2)
                     y = Island.DiscreteGaussianDraw(mean,std)+int(len(grid[0])/2)
                     if x >= nn and y >= nn and x <= len(grid)-nn and y <= len(grid[0])-nn:
@@ -438,9 +467,9 @@ class Island:
                 grid[x][y] = 1
             except IndexError:
                 pass
-        return grid
+        return grid, xmin, xmax, ymin, ymax
 
-    def ChangeIsolatedPoints(grid):
+    def ChangeIsolatedPoints(grid, xmin=None, xmax=None, ymin=None, ymax=None):
         """Changes isolated points to water or grass depending on the adjacent tiles.
         
         Parameters
@@ -583,23 +612,31 @@ class Island:
                     grid[i][j] = 0
         return grid
 
-    def ConnectRandomPoints(grid):
+    def ConnectRandomPoints(grid, xmin=None, xmax=None, ymin=None, ymax=None):
         """Connects random points together to form islands.
         
         Parameters
         ----------
         grid : list
             The grid to connect.
+        xmin : int
+            The minimum x value.
+        xmax : int
+            The maximum x value.
+        ymin : int
+            The minimum y value.
+        ymax : int
+            The maximum y value.
 
         Returns
         -------
         list
             The connected grid.
         """
-        for i in range(0,len(grid)):
-            for j in range(0,len(grid[0])):
-                i = len(grid)-1-i #To my eye, the resulting map looks better if the points are connected from the bottom up
-                j = len(grid[0])-1-j #Whereas top down looks biased towards the top. Not sure why.
+        for i in range(xmin,xmax):
+            for j in range(ymin,ymax):
+                i = ymax-1-i #To my eye, the resulting map looks better if the points are connected from the bottom up
+                j = ymax-1-j #Whereas top down looks biased towards the top. Not sure why.
                 if grid[i][j] == 1:
                     if random.randint(0,1) == 1:
                         grid[i][j] = 0
