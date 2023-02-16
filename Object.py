@@ -6,7 +6,7 @@ Object.py - This file contains the WorldObjects class and the Item class.
 I think I will add enums to this file.
 
 .. todo::   
-      Add more clear enums to this file. Further flesh out the item class.
+      Add more clear enums to this file and other relevant items. Further flesh out the item class.
 """
 
 
